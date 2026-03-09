@@ -1,0 +1,12 @@
+### Create Admin
+POST http://localhost:5000/api/admin/create-admin
+Content-Type: application/json
+
+{
+    "serviceNumber": "na/2000", 
+    "password": "password"
+}
+
+### test the healt of the server
+GET http://localhost:5000/api/admin/health
+Content-Type: application/json

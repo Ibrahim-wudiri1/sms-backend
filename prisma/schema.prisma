@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// generator client {
+//  provider = "prisma-client"
+//  output   = "../src/generated/prisma"
+// }
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  RTU
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  serviceNumber String    @unique
+  password      String
+  role          Role
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  student       Student?
+
+  @@index([role])
+}
+
+model Student {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @unique
+  firstName        String
+  lastName         String
+  gender           String
+  dateOfBirth      DateTime @db.Date
+  stateOfOrigin    String
+  lga              String
+  nationality      String
+  maritalStatus    String
+  address          String
+  phone            String
+  email            String
+  rank             String
+  unit             String
+  enlistmentDate   DateTime
+  batch            String
+  passportPhotoUrl String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollments Enrollment[]
+
+  @@index([lastName])
+  @@index([batch])
+}
+
+model Course {
+  id          Int      @id @default(autoincrement())
+  code        String   @default("null 101")
+  title       String
+  duration    Int      @default(12)
+  description String?
+  isActive    Boolean  @default(true)
+  isDeleted   Boolean  @default(false)   // Soft delete
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  enrollments Enrollment[]
+
+  @@index([isActive])
+  @@index([isDeleted])
+}
+
+model Enrollment {
+  id          Int              @id @default(autoincrement())
+  studentId   Int
+  courseId    Int
+  status      EnrollmentStatus
+  startedAt   DateTime         @default(now())
+  completedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  student     Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course      Course           @relation(fields: [courseId], references: [id])
+
+  academicRecords AcademicRecord[]
+
+  @@index([studentId])
+  @@index([courseId])
+  @@index([status])
+}
+
+model AcademicRecord {
+  id            Int      @id @default(autoincrement())
+  enrollmentId  Int
+  score         Float
+  grade         String
+  remark        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentId])
+}
