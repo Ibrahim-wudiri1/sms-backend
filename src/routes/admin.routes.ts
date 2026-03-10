@@ -1,5 +1,6 @@
 // src/routes/admin.routes.ts
-import { Router, Request, Response } from "express";
+import { Router, Response } from "express";
+import { Request } from "multer";
 import { AdminController } from "../controllers/admin.controller";
 import { AdminService } from "../services/admin.service";
 import { authMiddleware } from "../middleware/auth.middleware";
