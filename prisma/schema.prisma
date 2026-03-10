@@ -37,7 +37,7 @@ model User {
   isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-
+  refreshToken  String?
   student       Student?
 
   @@index([role])

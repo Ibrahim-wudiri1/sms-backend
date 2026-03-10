@@ -1,4 +1,5 @@
 // src/services/admin.service.ts
+import { Prisma } from "@prisma/client";
 import prisma from "../prisma";
 import { hashPassword } from "../utils/hash";
 
@@ -209,9 +210,9 @@ export class AdminService {
   static async getAllStudents( page: number, limit: number, search: string) {
     const whereCondition = {
       OR: [
-        { firstName: { contains: search, mode: "insensitive" } },
-        { lastName: { contains: search, mode: "insensitive" } },
-        { user: { serviceNumber: { contains: search, mode: "insensitive" } } },
+        { firstName: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { lastName: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { user: { serviceNumber: { contains: search, mode: Prisma.QueryMode.insensitive } } },
       ],
     };
     const total = await prisma.student.count({
