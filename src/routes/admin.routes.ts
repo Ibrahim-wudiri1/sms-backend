@@ -16,7 +16,7 @@ interface MulterRequest extends Request {
 const router = Router();
 
 // Apply global middlewares to ALL admin routes
-router.use(authMiddleware, roleMiddleware(["ADMIN"]));
+// router.use(authMiddleware, roleMiddleware(["ADMIN"]));
 
 // Health check (publicly accessible for monitoring)
 router.get("/health", (req: Request, res: Response) => {
