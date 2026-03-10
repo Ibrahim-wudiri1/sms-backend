@@ -1,7 +1,7 @@
 // src/controllers/admin.controller.ts
 import { Request, Response } from "express";
 import { AdminService } from "../services/admin.service";
-import { data } from "react-router-dom";
+// import { data } from "react-router-dom";
 
 export class AdminController {
   static async createAdmin(req: Request, res: Response) {
