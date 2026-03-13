@@ -7,7 +7,7 @@ import { roleMiddleware } from "../middleware/role.middleware";
 import { upload } from "../utils/upload";
 import { paginationSchema, createStudentSchema } from "../validators/student.validator";
 import { validate } from "../middleware/validator";
-
+import { supabase } from "../utils/supabase";
 // Extend Request type locally (if you don't have global express.d.ts yet)
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
@@ -27,24 +27,83 @@ router.get("/health", (req: Request, res: Response) => {
 router.post("/create-admin", AdminController.createAdmin);
 
 // Student CRUD
+// src/routes/admin.routes.ts  (only showing the relevant part)
+
 router.post(
   "/students",
-  upload.single("passportPhoto"),
+  upload.single("passportPhoto"), // still parse multipart/form-data
   validate(createStudentSchema, "body"),
   async (req: MulterRequest, res: Response) => {
     try {
       const studentData = { ...req.body };
+
+      let passportPhotoUrl: string | undefined;
+
       if (req.file) {
-        studentData.passportPhotoUrl = `/uploads/${req.file.filename}`;
+        const file = req.file;
+        const fileExt = file.originalname.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `students/${fileName}`; // optional folder inside bucket
+
+        // Upload to Supabase Storage (private bucket)
+        const { data, error } = await supabase.storage
+          .from('passport-photos')
+          .upload(filePath, file.buffer, {
+            contentType: file.mimetype,
+            upsert: false,
+          });
+
+        if (error) {
+          console.error('Storage upload error:', error);
+          throw new Error(`Failed to upload photo: ${error.message}`);
+        }
+
+        // Generate a signed URL (valid for e.g. 7 days)
+        const { data: signedUrlData, error: signedError } = await supabase.storage
+          .from('passport-photos')
+          .createSignedUrl(filePath, 60 * 60 * 24 * 7); // 7 days in seconds
+
+        if (signedError || !signedUrlData) {
+          throw new Error('Failed to generate signed URL');
+        }
+
+        passportPhotoUrl = signedUrlData.signedUrl;
       }
 
-      const student = await AdminService.createStudent(studentData);
+      // Save student with the signed URL (or permanent public URL if bucket is public)
+      const student = await AdminService.createStudent({
+        ...studentData,
+        passportPhotoUrl, // this will be the signed URL
+      });
+
       res.status(201).json(student);
     } catch (err: any) {
-      res.status(400).json({ message: err.message || "Failed to create student" });
+      console.error('Student creation error:', err);
+      res.status(500).json({
+        message: err.message || 'Failed to create student',
+        error: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+      });
     }
   }
 );
+// router.post(
+//   "/students",
+//   upload.single("passportPhoto"),
+//   validate(createStudentSchema, "body"),
+//   async (req: MulterRequest, res: Response) => {
+//     try {
+//       const studentData = { ...req.body };
+//       if (req.file) {
+//         studentData.passportPhotoUrl = `/uploads/${req.file.filename}`;
+//       }
+
+//       const student = await AdminService.createStudent(studentData);
+//       res.status(201).json(student);
+//     } catch (err: any) {
+//       res.status(400).json({ message: err.message || "Failed to create student" });
+//     }
+//   }
+// );
 
 router.get(
   "/students",
