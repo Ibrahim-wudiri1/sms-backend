@@ -12,12 +12,33 @@ import { errorMiddleware } from "./middleware/error.middleware";
 import { FRONTEND_URL } from "./config/index";
 
 const app = express();
-// nubh
 // Middleware
 app.use(helmet());
-app.use(
-  cors({origin: FRONTEND_URL, credentials: true,})
-);
+
+const allowedOrigins = [
+  'https://sms-frontend-rose.vercel.app', 
+  'http://localhost:5173',             
+  // add any preview URLs if needed, e.g. https://sms-frontend-*.vercel.app
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,                // very important if using cookies/auth
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Disposition'], // optional, if you send files
+}));
+// app.use(
+//   cors({origin: FRONTEND_URL, credentials: true,})
+// );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -27,7 +48,7 @@ app.use(
     max: 100,
   })
 );
-
+app.options('*', cors()); // handles preflight OPTIONS requests for all routes
 
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
