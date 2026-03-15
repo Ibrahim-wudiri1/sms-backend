@@ -19,6 +19,7 @@ export class AdminService {
 
   // Create Student + linked User
 static async createStudent(studentData: any) {
+  // console.log("Received studentData:", JSON.stringify(studentData, null, 2)); // ← add this
   const { 
     serviceNumber, 
     password, 
@@ -27,6 +28,8 @@ static async createStudent(studentData: any) {
     enlistmentDate, 
     ...studentProfile  // ← now includes gender, firstName, etc.
   } = studentData;
+
+  console.log("Spread studentProfile:", JSON.stringify(studentProfile, null, 2));
 
   const hashed = await hashPassword(password);
 
