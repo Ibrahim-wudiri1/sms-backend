@@ -16,7 +16,7 @@ export class AdminController {
 
   static async createStudent(req: Request, res: Response) {
     try {
-      console.log("Student Data: ", json.stringify(req.body, null, 2));
+      console.log("Student Data: ", JSON.stringify(req.body, null, 2));
       const student = await AdminService.createStudent(req.body);
       res.json(student);
     } catch (err: any) {
