@@ -22,11 +22,11 @@ if (!supabaseAnonKey) {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Optional: admin client if you need to bypass RLS sometimes
-export const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eGpqbWtnd3NibGl2eGl0eXF5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzA1MDgyMywiZXhwIjoyMDg4NjI2ODIzfQ.ZlBS_UWoxDFyViQsXShj9FpsqLXKkLZtUrV6Mm85CLg'
-  ? createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eGpqbWtnd3NibGl2eGl0eXF5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzA1MDgyMywiZXhwIjoyMDg4NjI2ODIzfQ.ZlBS_UWoxDFyViQsXShj9FpsqLXKkLZtUrV6Mm85CLg', {
-      auth: { autoRefreshToken: false, persistSession: false },
-    })
-  : null;
+// export const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eGpqbWtnd3NibGl2eGl0eXF5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzA1MDgyMywiZXhwIjoyMDg4NjI2ODIzfQ.ZlBS_UWoxDFyViQsXShj9FpsqLXKkLZtUrV6Mm85CLg'
+//   ? createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eGpqbWtnd3NibGl2eGl0eXF5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzA1MDgyMywiZXhwIjoyMDg4NjI2ODIzfQ.ZlBS_UWoxDFyViQsXShj9FpsqLXKkLZtUrV6Mm85CLg', {
+//       auth: { autoRefreshToken: false, persistSession: false },
+//     })
+//   : null;
 
   // src/utils/supabase.ts
 // import { createClient } from '@supabase/supabase-js';
@@ -38,13 +38,13 @@ export const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciO
 // );
 
 // // Admin client (bypasses RLS — only use server-side!)
-// export const supabaseAdmin = createClient(
-//   process.env.SUPABASE_URL!,
-//   process.env.SUPABASE_SERVICE_ROLE_KEY!,
-//   {
-//     auth: {
-//       autoRefreshToken: false,
-//       persistSession: false,
-//     },
-//   }
-// );
+export const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
