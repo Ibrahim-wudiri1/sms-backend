@@ -7,7 +7,7 @@ import { roleMiddleware } from "../middleware/role.middleware";
 import { upload } from "../utils/upload";
 import { paginationSchema, createStudentSchema } from "../validators/student.validator";
 import { validate } from "../middleware/validator";
-import { supabase } from "../utils/supabase";
+import { supabase, supabaseAdmin } from "../utils/supabase";
 // Extend Request type locally (if you don't have global express.d.ts yet)
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
@@ -46,7 +46,7 @@ router.post(
         const filePath = `students/${fileName}`; // optional folder inside bucket
 
         // Upload to Supabase Storage (private bucket)
-        const { data, error } = await supabase.storage
+        const { data, error } = await supabaseAdmin.storage
           .from('passport-photos')
           .upload(filePath, file.buffer, {
             contentType: file.mimetype,
