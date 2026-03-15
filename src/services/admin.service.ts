@@ -18,16 +18,21 @@ export class AdminService {
   }
 
   // Create Student + linked User
-  static async createStudent(studentData: any) {
-  const { serviceNumber, password, passportPhotoUrl, dateOfBirth, enlistmentDate, ...restProfile } = studentData;
+static async createStudent(studentData: any) {
+  const { 
+    serviceNumber, 
+    password, 
+    passportPhotoUrl, 
+    dateOfBirth, 
+    enlistmentDate, 
+    ...studentProfile  // ← now includes gender, firstName, etc.
+  } = studentData;
 
   const hashed = await hashPassword(password);
 
-  // Convert date strings → Date objects (midnight UTC — safe for @db.Date)
   const birthDate = dateOfBirth ? new Date(dateOfBirth) : undefined;
   const enlistDate = enlistmentDate ? new Date(enlistmentDate) : undefined;
 
-  // Optional: Validate they are valid dates
   if (dateOfBirth && isNaN(birthDate!.getTime())) {
     throw new Error("Invalid dateOfBirth format. Use YYYY-MM-DD");
   }
@@ -43,10 +48,10 @@ export class AdminService {
       isActive: true,
       student: {
         create: {
-          ...restProfile,
+          ...studentProfile,          // ← includes gender, firstName, lastName, etc.
           passportPhotoUrl,
-          dateOfBirth: birthDate,       // now a Date object
-          enlistmentDate: enlistDate,   // now a Date object
+          dateOfBirth: birthDate,
+          enlistmentDate: enlistDate,
         },
       },
     },
