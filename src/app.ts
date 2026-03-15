@@ -48,7 +48,7 @@ app.use(
     max: 100,
   })
 );
-app.options('*', cors()); // handles preflight OPTIONS requests for all routes
+// app.options('*', cors()); // handles preflight OPTIONS requests for all routes
 
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
