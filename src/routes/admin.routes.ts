@@ -59,7 +59,7 @@ router.post(
         }
 
         // Generate a signed URL (valid for e.g. 7 days)
-        const { data: signedUrlData, error: signedError } = await supabase.storage
+        const { data: signedUrlData, error: signedError } = await supabaseAdmin.storage
           .from('passport-photos')
           .createSignedUrl(filePath, 60 * 60 * 24 * 7); // 7 days in seconds
 
