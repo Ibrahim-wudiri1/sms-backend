@@ -48,7 +48,7 @@ static async createStudent(studentData: any) {
       isActive: true,
       student: {
         create: {
-          ...studentProfile,          // ← includes gender, firstName, lastName, etc.
+          ...studentProfile,          //
           passportPhotoUrl,
           dateOfBirth: birthDate,
           enlistmentDate: enlistDate,
@@ -60,6 +60,25 @@ static async createStudent(studentData: any) {
 
   return user;
 }
+
+      // serviceNumber,
+      // password: hashed,
+      // role: "STUDENT",
+      // isActive: true,
+      // student: {
+      //   create: {
+      //     ...studentProfile,          // ← includes gender, firstName, lastName, etc.
+      //     passportPhotoUrl,
+  //         dateOfBirth: birthDate,
+  //         enlistmentDate: enlistDate,
+  //       },
+  //     },
+  //   },
+  //   include: { student: true },
+  // });
+
+//   return user;
+// }
 
   static async editStudent(studentId: number, studentData: any) {
     const { dateOfBirth, enlistmentDate, ...restProfile } = studentData;
