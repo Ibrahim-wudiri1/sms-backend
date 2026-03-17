@@ -140,7 +140,7 @@ router.put(
 router.delete("/students/:id", AdminController.deleteStudent);
 
 // Course CRUD
-router.post("/courses", AdminController.createCourse);
+router.post("/courses", express.json(), AdminController.createCourse);
 router.get("/courses", AdminController.getAllCourses);
 router.delete("/courses/:id", AdminController.deleteCourse);
 
@@ -148,10 +148,10 @@ router.delete("/courses/:id", AdminController.deleteCourse);
 router.post("/enroll", express.json(), AdminController.enrollStudent);
 router.get("/enrollments/active", AdminController.getAllActiveEnrollment);
 router.get("/enrollments/student/:studentId", AdminController.getEnrollmentsByStudent);
-router.patch("/enroll/status", AdminController.updateEnrollmentStatus);
+router.patch("/enroll/status", express.json(), AdminController.updateEnrollmentStatus);
 
 // Academic Records
-router.post("/academic-records", AdminController.addAcademicRecord);
+router.post("/academic-records", express.json(), AdminController.addAcademicRecord);
 router.get("/academic-records", AdminController.getAllAcademicRecords);
 
 // 404 for unmatched admin sub-routes (optional but good practice)
