@@ -63,25 +63,7 @@ static async createStudent(studentData: any) {
 
   return user;
 }
-
-      // serviceNumber,
-      // password: hashed,
-      // role: "STUDENT",
-      // isActive: true,
-      // student: {
-      //   create: {
-      //     ...studentProfile,          // ← includes gender, firstName, lastName, etc.
-      //     passportPhotoUrl,
-  //         dateOfBirth: birthDate,
-  //         enlistmentDate: enlistDate,
-  //       },
-  //     },
-  //   },
-  //   include: { student: true },
-  // });
-
-//   return user;
-// }
+       
 
   static async editStudent(studentId: number, studentData: any) {
     const { dateOfBirth, enlistmentDate, ...restProfile } = studentData;
@@ -234,7 +216,7 @@ static async createStudent(studentData: any) {
   }
 
   // Fetch all students
-  static async getAllStudents( page: number, limit: number, search: string) {
+  static async getAllStudentsWithPagination( page: number, limit: number, search: string) {
     const whereCondition = {
       OR: [
         { firstName: { contains: search, mode: Prisma.QueryMode.insensitive } },
@@ -262,7 +244,7 @@ static async createStudent(studentData: any) {
     };
   }
 
-  static async getAllStudentss() {
+  static async getAllStudents() {
     return prisma.student.findMany({
       include: { user: true, enrollments: true },
       orderBy: {

@@ -67,6 +67,7 @@ export class AdminController {
 
   static async enrollStudent(req: Request, res: Response) {
     try {
+      console.log("Enrollment data: ", req.body);
       const { studentId, courseId } = req.body;
       const enrollment = await AdminService.enrollStudent(Number(studentId), Number(courseId));
       res.json(enrollment);
@@ -143,7 +144,7 @@ export class AdminController {
     const offset = (page - 1) * limit;
     const search = req.query.search ? String(req.query.search) : "";
     try {
-      const result = await AdminService.getAllStudents(page, limit, search);
+      const result = await AdminService.getAllStudentsWithPagination(page, limit, search);
       res.json(result);
     } catch (err: any) {
       res.status(400).json({ message: err.message });
@@ -151,8 +152,9 @@ export class AdminController {
   }
 
   static async getAllStudents(req: Request, res: Response) {
+    
     try {
-      const students = await AdminService.getAllStudentss();
+      const students = await AdminService.getAllStudents();
       res.json(students);
     } catch (err: any) {
       res.status(400).json({ message: err.message });

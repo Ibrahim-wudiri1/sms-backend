@@ -36,8 +36,8 @@ app.use(
 );
 
 app.use(helmet());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use(
@@ -49,11 +49,11 @@ app.use(
   })
 );
 
-// app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
 
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", express.json(), authRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/student", studentRoutes);
+app.use("/api/student", express.json(), studentRoutes);
 
 app.use(errorMiddleware);
 

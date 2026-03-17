@@ -1,5 +1,6 @@
 // src/routes/admin.routes.ts
 import { Router, Request, Response } from "express";
+import express from "express";
 import { AdminController } from "../controllers/admin.controller";
 import { AdminService } from "../services/admin.service";
 import { authMiddleware } from "../middleware/auth.middleware";
@@ -28,15 +29,17 @@ router.post("/create-admin", AdminController.createAdmin);
 
 // Student CRUD
 // src/routes/admin.routes.ts  (only showing the relevant part)
+  // validate(createStudentSchema, "body"),
 
 router.post(
   "/students",
   upload.single("passportPhoto"), // still parse multipart/form-data
-  validate(createStudentSchema, "body"),
   async (req: MulterRequest, res: Response) => {
     try {
       const studentData = { ...req.body };
 
+      console.log('Received student data from admin route:', studentData);
+      console.log('Received file:', req.file);
       let passportPhotoUrl: string | undefined;
 
       if (req.file) {
@@ -112,6 +115,7 @@ router.get(
 );
 
 router.get("/students/all", AdminController.getAllStudents); // renamed from studentss → clearer
+router.get("/students/pagination", AdminController.getAllStudentsWithPagination); // renamed from studentss → clearer
 
 router.get("/students/:id", AdminController.getStudentById);
 
@@ -141,7 +145,7 @@ router.get("/courses", AdminController.getAllCourses);
 router.delete("/courses/:id", AdminController.deleteCourse);
 
 // Enrollment routes
-router.post("/enroll", AdminController.enrollStudent);
+router.post("/enroll", express.json(), AdminController.enrollStudent);
 router.get("/enrollments/active", AdminController.getAllActiveEnrollment);
 router.get("/enrollments/student/:studentId", AdminController.getEnrollmentsByStudent);
 router.patch("/enroll/status", AdminController.updateEnrollmentStatus);

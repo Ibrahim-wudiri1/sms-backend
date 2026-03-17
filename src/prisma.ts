@@ -22,8 +22,8 @@ if (!globalForPrisma.pgPool) {
     connectionString: process.env.DATABASE_URL,
     // Recommended settings for serverless / Vercel
     max: 20,                    // adjust based on your plan
-    connectionTimeoutMillis: 5000,
-    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 7000,
+    idleTimeoutMillis: 50000,
   });
 
   globalForPrisma.pgAdapter = new PrismaPg(globalForPrisma.pgPool);
