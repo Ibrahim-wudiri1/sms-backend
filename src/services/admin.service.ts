@@ -211,7 +211,12 @@ static async createStudent(studentData: any) {
 
   static async getAllAcademicRecords() {
     return prisma.academicRecord.findMany({
-      include: { enrollment: { include: { student: true, course: true } } },
+      include: { enrollment:
+         { include:
+           { student: {include: {user: true}},
+            course: true } 
+          } 
+        },
     });
   }
 

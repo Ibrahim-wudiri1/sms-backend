@@ -122,6 +122,7 @@ export class AdminController {
   static async getAllAcademicRecords(req: Request, res: Response) {
     try {
       const records = await AdminService.getAllAcademicRecords();
+      console.log("Academic Records: ", records);
       res.json(records);
     } catch (err: any) {
       res.status(400).json({ message: err.message });
