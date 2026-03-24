@@ -66,21 +66,26 @@ static async createStudent(studentData: any) {
        
 
   static async editStudent(studentId: number, studentData: any) {
-    const { dateOfBirth, enlistmentDate, ...restProfile } = studentData;
-    // Convert date strings → Date objects (midnight UTC — safe for @db.Date)
+    const { 
+      dateOfBirth, 
+      enlistmentDate, 
+      ...restProfile 
+    } = studentData;
+
     const birthDate = dateOfBirth ? new Date(dateOfBirth) : undefined;
     const enlistDate = enlistmentDate ? new Date(enlistmentDate) : undefined;
-    // Optional: Validate they are valid dates
+
     if (dateOfBirth && isNaN(birthDate!.getTime())) {
       throw new Error("Invalid dateOfBirth format. Use YYYY-MM-DD");
     }
     if (enlistmentDate && isNaN(enlistDate!.getTime())) {
       throw new Error("Invalid enlistmentDate format. Use YYYY-MM-DD");
     }
+
     return prisma.student.update({
       where: { id: studentId },
       data: {
-        ...restProfile,
+        ...restProfile,           // all other fields (firstName, gender, etc.)
         dateOfBirth: birthDate,
         enlistmentDate: enlistDate,
       },
