@@ -65,33 +65,55 @@ static async createStudent(studentData: any) {
 }
        
 
-  static async editStudent(studentId: number, studentData: any) {
-    const { 
-      dateOfBirth, 
-      enlistmentDate, 
-      ...restProfile 
-    } = studentData;
+  // src/services/admin.service.ts
+static async editStudent(studentId: number, studentData: any) {
+  const { 
+    dateOfBirth, 
+    enlistmentDate, 
+    serviceNumber,        // ← extract it
+    ...studentFields      // all other student fields
+  } = studentData;
 
-    const birthDate = dateOfBirth ? new Date(dateOfBirth) : undefined;
-    const enlistDate = enlistmentDate ? new Date(enlistmentDate) : undefined;
+  const birthDate = dateOfBirth ? new Date(dateOfBirth) : undefined;
+  const enlistDate = enlistmentDate ? new Date(enlistmentDate) : undefined;
 
-    if (dateOfBirth && isNaN(birthDate!.getTime())) {
-      throw new Error("Invalid dateOfBirth format. Use YYYY-MM-DD");
+  if (dateOfBirth && isNaN(birthDate!.getTime())) {
+    throw new Error("Invalid dateOfBirth format. Use YYYY-MM-DD");
+  }
+  if (enlistmentDate && isNaN(enlistDate!.getTime())) {
+    throw new Error("Invalid enlistmentDate format. Use YYYY-MM-DD");
+  }
+
+  // First, get the student to know the linked userId
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { userId: true }
+  });
+
+  if (!student) throw new Error("Student not found");
+
+  // Update both User and Student in a transaction
+  return prisma.$transaction(async (tx) => {
+    // Update serviceNumber in User (if provided)
+    if (serviceNumber) {
+      await tx.user.update({
+        where: { id: student.userId },
+        data: { serviceNumber },
+      });
     }
-    if (enlistmentDate && isNaN(enlistDate!.getTime())) {
-      throw new Error("Invalid enlistmentDate format. Use YYYY-MM-DD");
-    }
 
-    return prisma.student.update({
+    // Update Student fields
+    return tx.student.update({
       where: { id: studentId },
       data: {
-        ...restProfile,           // all other fields (firstName, gender, etc.)
+        ...studentFields,
         dateOfBirth: birthDate,
         enlistmentDate: enlistDate,
       },
+      include: { user: true },
     });
-  }
-
+  });
+}
   static async deleteStudent(studentId: number) {
     // Soft delete: set isActive = false on User, but keep Student record for history
     const student = await prisma.student.findUnique({

@@ -118,24 +118,24 @@ router.get("/students/all", AdminController.getAllStudents); // renamed from stu
 router.get("/students/pagination", AdminController.getAllStudentsWithPagination); // renamed from studentss → clearer
 
 router.get("/students/:id", AdminController.getStudentById);
-
-router.put(
-  "/students/:id",
-  upload.single("passportPhoto"),
-  async (req: MulterRequest & { params: { id: string } }, res: Response) => {
-    try {
-      const studentData = { ...req.body };
-      if (req.file) {
-        studentData.passportPhotoUrl = `/uploads/${req.file.filename}`;
-      }
-      const { id } = req.params;
-      const updatedStudent = await AdminService.editStudent(Number(id), studentData);
-      res.json(updatedStudent);
-    } catch (err: any) {
-      res.status(400).json({ message: err.message || "Failed to update student" });
-    }
-  }
-);
+router.put("/students/:id", express.json(), AdminController.editStudent);
+// router.put(
+//   "/students/:id",
+//   upload.single("passportPhoto"),
+//   async (req: MulterRequest & { params: { id: string } }, res: Response) => {
+//     try {
+//       const studentData = { ...req.body };
+//       if (req.file) {
+//         studentData.passportPhotoUrl = `/uploads/${req.file.filename}`;
+//       }
+//       const { id } = req.params;
+//       const updatedStudent = await AdminService.editStudent(Number(id), studentData);
+//       res.json(updatedStudent);
+//     } catch (err: any) {
+//       res.status(400).json({ message: err.message || "Failed to update student" });
+//     }
+//   }
+// );
 
 router.delete("/students/:id", AdminController.deleteStudent);
 

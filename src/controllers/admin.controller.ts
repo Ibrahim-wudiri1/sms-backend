@@ -28,6 +28,7 @@ export class AdminController {
   static async editStudent(req: Request, res: Response) {
     try {
       const { id } = req.params;
+      console.log("Student Update Data: ", JSON.stringify(req.body, null, 2));
       const updatedStudent = await AdminService.editStudent(Number(id), req.body);
       res.json(updatedStudent);
     } catch (err: any) {

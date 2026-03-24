@@ -49,9 +49,9 @@ model Student {
   firstName        String
   lastName         String
   gender           String
-  dateOfBirth      DateTime @db.Date
-  stateOfOrigin    String
-  lga              String
+  dateOfBirth      DateTime? @db.Date
+  stateOfOrigin    String?
+  lga              String?
   nationality      String
   maritalStatus    String
   address          String
@@ -59,7 +59,7 @@ model Student {
   email            String
   rank             String
   unit             String
-  enlistmentDate   DateTime
+  enlistmentDate   DateTime @default(now())
   batch            String
   passportPhotoUrl String?
   createdAt        DateTime @default(now())
