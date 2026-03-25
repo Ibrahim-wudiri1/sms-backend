@@ -24,7 +24,7 @@ static async createStudent(studentData: any) {
     serviceNumber, 
     password, 
     passportPhotoUrl, 
-    dateOfBirth, 
+    // dateOfBirth, 
     enlistmentDate, 
     ...studentProfile  // ← now includes gender, firstName, etc.
   } = studentData;
@@ -33,12 +33,12 @@ static async createStudent(studentData: any) {
 
   const hashed = await hashPassword(password);
 
-  const birthDate = dateOfBirth ? new Date(dateOfBirth) : undefined;
+  // const birthDate = dateOfBirth ? new Date(dateOfBirth) : undefined;
   const enlistDate = enlistmentDate ? new Date(enlistmentDate) : undefined;
 
-  if (dateOfBirth && isNaN(birthDate!.getTime())) {
-    throw new Error("Invalid dateOfBirth format. Use YYYY-MM-DD");
-  }
+  // if (dateOfBirth && isNaN(birthDate!.getTime())) {
+  //   throw new Error("Invalid dateOfBirth format. Use YYYY-MM-DD");
+  // }
   if (enlistmentDate && isNaN(enlistDate!.getTime())) {
     throw new Error("Invalid enlistmentDate format. Use YYYY-MM-DD");
   }
@@ -53,7 +53,7 @@ static async createStudent(studentData: any) {
         create: {
           ...studentProfile,          //
           passportPhotoUrl,
-          dateOfBirth: birthDate,
+          // dateOfBirth: birthDate,
           enlistmentDate: enlistDate,
         },
       },
@@ -68,18 +68,18 @@ static async createStudent(studentData: any) {
   // src/services/admin.service.ts
 static async editStudent(studentId: number, studentData: any) {
   const { 
-    dateOfBirth, 
+    // dateOfBirth, 
     enlistmentDate, 
     serviceNumber,        // ← extract it
     ...studentFields      // all other student fields
   } = studentData;
 
-  const birthDate = dateOfBirth ? new Date(dateOfBirth) : undefined;
+  // const birthDate = dateOfBirth ? new Date(dateOfBirth) : undefined;
   const enlistDate = enlistmentDate ? new Date(enlistmentDate) : undefined;
 
-  if (dateOfBirth && isNaN(birthDate!.getTime())) {
-    throw new Error("Invalid dateOfBirth format. Use YYYY-MM-DD");
-  }
+  // if (dateOfBirth && isNaN(birthDate!.getTime())) {
+  //   throw new Error("Invalid dateOfBirth format. Use YYYY-MM-DD");
+  // }
   if (enlistmentDate && isNaN(enlistDate!.getTime())) {
     throw new Error("Invalid enlistmentDate format. Use YYYY-MM-DD");
   }
@@ -107,7 +107,7 @@ static async editStudent(studentId: number, studentData: any) {
       where: { id: studentId },
       data: {
         ...studentFields,
-        dateOfBirth: birthDate,
+        // dateOfBirth: birthDate,
         enlistmentDate: enlistDate,
       },
       include: { user: true },

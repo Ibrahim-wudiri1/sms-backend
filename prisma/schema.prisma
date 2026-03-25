@@ -49,7 +49,6 @@ model Student {
   firstName        String
   lastName         String
   gender           String
-  dateOfBirth      DateTime? @db.Date
   stateOfOrigin    String?
   lga              String?
   nationality      String
