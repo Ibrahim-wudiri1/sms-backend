@@ -142,6 +142,8 @@ router.delete("/students/:id", AdminController.deleteStudent);
 // Course CRUD
 router.post("/courses", express.json(), AdminController.createCourse);
 router.get("/courses", AdminController.getAllCourses);
+router.get("/course/:id/students", AdminController.getStudentsByCourse);
+router.get("/student/:id/details", AdminController.getStudentFullDetails);
 router.delete("/courses/:id", AdminController.deleteCourse);
 
 // Enrollment routes

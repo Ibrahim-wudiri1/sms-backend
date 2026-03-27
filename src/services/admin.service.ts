@@ -166,6 +166,48 @@ static async editStudent(studentId: number, studentData: any) {
       {where: {isDeleted: false}},
     );
   }
+
+  static async getStudentsByCourse(courseId: number) {
+  return prisma.enrollment.findMany({
+    where: {
+      courseId,
+      status: "ACTIVE",
+    },
+    include: {
+      student: {
+        include: {
+          user: true,
+        },
+      },
+    },
+  }).then((enrollments) =>
+    enrollments.map((e) => ({
+      ...e.student,
+      enrollmentId: e.id, // useful for status updates
+    }))
+  );
+}
+
+static async getStudentFullDetails(studentId: number) {
+  return prisma.student.findUnique({
+    where: { id: studentId },
+    include: {
+      user: true,
+
+      enrollments: {
+        include: {
+          course: true,
+          academicRecords: true,
+        },
+        orderBy: {
+          startedAt: "desc",
+        },
+      },
+
+    },
+  });
+}
+
   // Soft delete Course
   static async deleteCourse(courseId: number) {
     return prisma.course.update({
@@ -278,7 +320,15 @@ static async editStudent(studentId: number, studentData: any) {
 
   static async getAllStudents() {
     return prisma.student.findMany({
-      include: { user: true, enrollments: true },
+      where: {
+        user:{
+         isActive: true,           // ← This filters only active students  
+        }
+      },
+      include: {
+        user: true,
+        enrollments: true,
+      },
       orderBy: {
         createdAt: "desc",
       },

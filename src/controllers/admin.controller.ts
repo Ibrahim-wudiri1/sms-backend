@@ -56,6 +56,26 @@ export class AdminController {
     }
   }
 
+  static async getStudentsByCourse(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const students = await AdminService.getStudentsByCourse(Number(id));
+      res.json(students);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+
+  static async getStudentFullDetails(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const studentDetails = await AdminService.getStudentFullDetails(Number(id));
+      res.json(studentDetails);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+
   static async deleteCourse(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -157,6 +177,7 @@ export class AdminController {
     
     try {
       const students = await AdminService.getAllStudents();
+      // console.log("Fetched students: ", JSON.stringify(students, null, 2));
       res.json(students);
     } catch (err: any) {
       res.status(400).json({ message: err.message });
