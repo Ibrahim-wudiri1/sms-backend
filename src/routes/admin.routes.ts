@@ -150,7 +150,7 @@ router.delete("/courses/:id", AdminController.deleteCourse);
 router.post("/enroll", express.json(), AdminController.enrollStudent);
 router.get("/enrollments/active", AdminController.getAllActiveEnrollment);
 router.get("/enrollments/student/:studentId", AdminController.getEnrollmentsByStudent);
-router.patch("/enroll/status", express.json(), AdminController.updateEnrollmentStatus);
+router.patch("/enrollments/:enrollmentId", express.json(), AdminController.updateEnrollmentStatus);
 
 // Academic Records
 router.post("/academic-records", express.json(), AdminController.addAcademicRecord);
