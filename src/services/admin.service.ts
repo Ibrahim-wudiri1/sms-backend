@@ -5,13 +5,13 @@ import { hashPassword } from "../utils/hash";
 
 export class AdminService {
   // Create another Admin
-  static async createAdmin(serviceNumber: string, password: string) {
+  static async createAdmin(serviceNumber: string, password: string, role: string) {
     const hashed = await hashPassword(password);
     return prisma.user.create({
       data: {
         serviceNumber,
         password: hashed,
-        role: "ADMIN",
+        role: role,
         isActive: true,
       },
     });

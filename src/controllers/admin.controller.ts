@@ -6,8 +6,8 @@ import { AdminService } from "../services/admin.service";
 export class AdminController {
   static async createAdmin(req: Request, res: Response) {
     try {
-      const { serviceNumber, password } = req.body;
-      const admin = await AdminService.createAdmin(serviceNumber, password);
+      const { serviceNumber, password, role } = req.body;
+      const admin = await AdminService.createAdmin(serviceNumber, password, role);
       res.json(admin);
     } catch (err: any) {
       res.status(400).json({ message: err.message });

@@ -20,7 +20,7 @@ const router = Router();
 // router.use(authMiddleware, roleMiddleware(["ADMIN"]));
 
 // Health check (publicly accessible for monitoring)
-router.get("/health", (req: Request, res: Response) => {
+router.get("/", (req: Request, res: Response) => {
   res.json({ status: "Admin routes are healthy!" });
 });
 
