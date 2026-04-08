@@ -1,12 +1,24 @@
 // src/services/admin.service.ts
-import { Prisma } from "@prisma/client";
+import { Role } from "@prisma/client";
 import prisma from "../prisma";
 import { hashPassword } from "../utils/hash";
 
 export class AdminService {
   // Create another Admin
-  static async createAdmin(serviceNumber: string, password: string, role: string) {
+  static async createAdmin(serviceNumber: string, password: string, role: Role) {
     const hashed = await hashPassword(password);
+
+    if (!Object.values(Role).includes(role)) {
+      throw new Error("Invalid role");
+    }
+
+    const examOfficerExist = await prisma.user.findFirst({
+      where: {role: Role.EXAM_OFFICER},
+    });
+
+    if(examOfficerExist) {
+      throw new Error("Exam Officer already exists. Only one Exam Officer allowed.");
+    }
     return prisma.user.create({
       data: {
         serviceNumber,
@@ -15,6 +27,28 @@ export class AdminService {
         isActive: true,
       },
     });
+  }
+  static async getExamOfficer() {
+    return await prisma.user.findMany({
+      where: { role: "EXAM_OFFICER" as Role},
+      orderBy: {createdAt: "desc"}
+    })
+  };
+
+  static async updateExamOfficer(id: number, data: any){
+    return prisma.user.update({
+       where: {id},
+        data: {
+          serviceNumber: data.serviceNumber,
+        },
+    });
+  };
+
+  static async deactivateExamOfficer(id: number, data: any){
+    return prisma.user.update({
+      where: {id},
+      data: {isActive: data.isActive}
+    })
   }
 
   // Create Student + linked User

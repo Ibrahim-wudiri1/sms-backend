@@ -14,6 +14,38 @@ export class AdminController {
     }
   }
 
+  static async getExamOfficer(req: Request, res: Response){
+    try{
+      const examOfficer = await AdminService.getExamOfficer();
+      res.json(examOfficer);
+    } catch (err: any){
+      console.error("Getting ExamOfficer Error: ", err.message);
+      res.status(400).json({message: err.message});
+    }
+  }
+
+  static async updateExamOfficer(req: Request, res: Response){
+    try{
+      const {id} = req.params;
+      const updated = await AdminService.updateExamOfficer(Number(id), req.body);
+      res.json(updated);
+    } catch(err: any){
+      console.error("Updated ExamOfficer Error: ", err.message);
+      res.status(400).json({message: err.message});
+    }
+  }
+
+  static async deactivateExamOfficer(req: Request, res: Response){
+    try{
+      const {id} = req.params;
+      const result = await AdminService.deactivateExamOfficer(Number(id), req.body);
+      res.json(result);
+    }  catch(err: any){
+      console.error("Error deactivating officer: ", err.message);
+      res.status(400).json({message: err.message});
+    }
+  }
+
   static async createStudent(req: Request, res: Response) {
     try {
       console.log("Student Data: ", JSON.stringify(req.body, null, 2));

@@ -25,7 +25,10 @@ router.get("/", (req: Request, res: Response) => {
 });
 
 // Admin user creation (usually only once or very restricted)
-router.post("/create-admin", AdminController.createAdmin);
+router.post("/create-admin", express.json(), AdminController.createAdmin);
+router.get("/exam-officers", AdminController.getExamOfficer);
+router.put("/exam-officer/:id", express.json(), AdminController.updateExamOfficer);
+router.patch("/exam-officer/:id", express.json(), AdminController.deactivateExamOfficer);
 
 // Student CRUD
 // src/routes/admin.routes.ts  (only showing the relevant part)
