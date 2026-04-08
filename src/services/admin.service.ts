@@ -1,5 +1,5 @@
 // src/services/admin.service.ts
-import { Role } from "@prisma/client";
+import { Role, Prisma } from "@prisma/client";
 import prisma from "../prisma";
 import { hashPassword } from "../utils/hash";
 
