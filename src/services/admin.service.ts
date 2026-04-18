@@ -105,6 +105,12 @@ static async editStudent(studentId: number, studentData: any) {
     // dateOfBirth, 
     enlistmentDate, 
     serviceNumber,        // ← extract it
+    user,                 // ← exclude nested user payload entirely
+    enrollments,          // ← exclude nested enrollments payload
+    id,                   // ← exclude id from studentFields
+    userId,               // ← exclude userId (foreign key)
+    createdAt,            // ← exclude timestamps
+    updatedAt,            // ← exclude timestamps
     ...studentFields      // all other student fields
   } = studentData;
 

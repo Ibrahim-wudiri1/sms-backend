@@ -10,7 +10,7 @@ exports.JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || "access_secret";
 exports.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "refresh_secret";
 exports.ACCESS_TOKEN_EXPIRY = "15m";
 exports.REFRESH_TOKEN_EXPIRY = "7d";
-exports.FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+exports.FRONTEND_URL = process.env.FRONTEND_URL || "https://sms-frontend-rose.vercel.app";
 exports.DIRECT_URL = process.env.DIRECT_URL || "";
 // bcbdaun c 
 //# sourceMappingURL=index.js.map

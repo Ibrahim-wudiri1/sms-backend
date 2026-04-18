@@ -10,28 +10,62 @@ const prisma_1 = __importDefault(require("../prisma"));
 const hash_1 = require("../utils/hash");
 class AdminService {
     // Create another Admin
-    static async createAdmin(serviceNumber, password) {
+    static async createAdmin(serviceNumber, password, role) {
         const hashed = await (0, hash_1.hashPassword)(password);
+        if (!Object.values(client_1.Role).includes(role)) {
+            throw new Error("Invalid role");
+        }
+        const examOfficerExist = await prisma_1.default.user.findFirst({
+            where: { role: client_1.Role.EXAM_OFFICER },
+        });
+        if (examOfficerExist) {
+            throw new Error("Exam Officer already exists. Only one Exam Officer allowed.");
+        }
         return prisma_1.default.user.create({
             data: {
                 serviceNumber,
                 password: hashed,
-                role: "ADMIN",
+                role: role,
                 isActive: true,
             },
         });
     }
+    static async getExamOfficer() {
+        return await prisma_1.default.user.findMany({
+            where: { role: "EXAM_OFFICER" },
+            orderBy: { createdAt: "desc" }
+        });
+    }
+    ;
+    static async updateExamOfficer(id, data) {
+        return prisma_1.default.user.update({
+            where: { id },
+            data: {
+                serviceNumber: data.serviceNumber,
+            },
+        });
+    }
+    ;
+    static async deactivateExamOfficer(id, data) {
+        return prisma_1.default.user.update({
+            where: { id },
+            data: { isActive: data.isActive }
+        });
+    }
     // Create Student + linked User
     static async createStudent(studentData) {
-        const { serviceNumber, password, passportPhotoUrl, dateOfBirth, enlistmentDate, ...restProfile } = studentData;
+        // console.log("Received studentData:", JSON.stringify(studentData, null, 2)); // ← add this
+        const { serviceNumber, password, passportPhotoUrl, 
+        // dateOfBirth, 
+        enlistmentDate, ...studentProfile // ← now includes gender, firstName, etc.
+         } = studentData;
+        console.log("Spread studentProfile:", JSON.stringify(studentProfile, null, 2));
         const hashed = await (0, hash_1.hashPassword)(password);
-        // Convert date strings → Date objects (midnight UTC — safe for @db.Date)
-        const birthDate = dateOfBirth ? new Date(dateOfBirth) : undefined;
+        // const birthDate = dateOfBirth ? new Date(dateOfBirth) : undefined;
         const enlistDate = enlistmentDate ? new Date(enlistmentDate) : undefined;
-        // Optional: Validate they are valid dates
-        if (dateOfBirth && isNaN(birthDate.getTime())) {
-            throw new Error("Invalid dateOfBirth format. Use YYYY-MM-DD");
-        }
+        // if (dateOfBirth && isNaN(birthDate!.getTime())) {
+        //   throw new Error("Invalid dateOfBirth format. Use YYYY-MM-DD");
+        // }
         if (enlistmentDate && isNaN(enlistDate.getTime())) {
             throw new Error("Invalid enlistmentDate format. Use YYYY-MM-DD");
         }
@@ -43,10 +77,10 @@ class AdminService {
                 isActive: true,
                 student: {
                     create: {
-                        ...restProfile,
+                        ...studentProfile, //
                         passportPhotoUrl,
-                        dateOfBirth: birthDate, // now a Date object
-                        enlistmentDate: enlistDate, // now a Date object
+                        // dateOfBirth: birthDate,
+                        enlistmentDate: enlistDate,
                     },
                 },
             },
@@ -54,25 +88,51 @@ class AdminService {
         });
         return user;
     }
+    // src/services/admin.service.ts
     static async editStudent(studentId, studentData) {
-        const { dateOfBirth, enlistmentDate, ...restProfile } = studentData;
-        // Convert date strings → Date objects (midnight UTC — safe for @db.Date)
-        const birthDate = dateOfBirth ? new Date(dateOfBirth) : undefined;
+        const { 
+        // dateOfBirth, 
+        enlistmentDate, serviceNumber, // ← extract it
+        id, // ← exclude id from studentFields
+        userId, // ← exclude userId (foreign key)
+        createdAt, // ← exclude timestamps
+        updatedAt, // ← exclude timestamps
+        ...studentFields // all other student fields
+         } = studentData;
+        // const birthDate = dateOfBirth ? new Date(dateOfBirth) : undefined;
         const enlistDate = enlistmentDate ? new Date(enlistmentDate) : undefined;
-        // Optional: Validate they are valid dates
-        if (dateOfBirth && isNaN(birthDate.getTime())) {
-            throw new Error("Invalid dateOfBirth format. Use YYYY-MM-DD");
-        }
+        // if (dateOfBirth && isNaN(birthDate!.getTime())) {
+        //   throw new Error("Invalid dateOfBirth format. Use YYYY-MM-DD");
+        // }
         if (enlistmentDate && isNaN(enlistDate.getTime())) {
             throw new Error("Invalid enlistmentDate format. Use YYYY-MM-DD");
         }
-        return prisma_1.default.student.update({
+        // First, get the student to know the linked userId
+        const student = await prisma_1.default.student.findUnique({
             where: { id: studentId },
-            data: {
-                ...restProfile,
-                dateOfBirth: birthDate,
-                enlistmentDate: enlistDate,
-            },
+            select: { userId: true }
+        });
+        if (!student)
+            throw new Error("Student not found");
+        // Update both User and Student in a transaction
+        return prisma_1.default.$transaction(async (tx) => {
+            // Update serviceNumber in User (if provided)
+            if (serviceNumber) {
+                await tx.user.update({
+                    where: { id: student.userId },
+                    data: { serviceNumber },
+                });
+            }
+            // Update Student fields
+            return tx.student.update({
+                where: { id: studentId },
+                data: {
+                    ...studentFields,
+                    // dateOfBirth: birthDate,
+                    enlistmentDate: enlistDate,
+                },
+                include: { user: true },
+            });
         });
     }
     static async deleteStudent(studentId) {
@@ -120,6 +180,41 @@ class AdminService {
     // get all courses
     static async getAllCourses() {
         return prisma_1.default.course.findMany({ where: { isDeleted: false } });
+    }
+    static async getStudentsByCourse(courseId) {
+        return prisma_1.default.enrollment.findMany({
+            where: {
+                courseId,
+                status: "ACTIVE",
+            },
+            include: {
+                student: {
+                    include: {
+                        user: true,
+                    },
+                },
+            },
+        }).then((enrollments) => enrollments.map((e) => ({
+            ...e.student,
+            enrollmentId: e.id, // useful for status updates
+        })));
+    }
+    static async getStudentFullDetails(studentId) {
+        return prisma_1.default.student.findUnique({
+            where: { id: studentId },
+            include: {
+                user: true,
+                enrollments: {
+                    include: {
+                        course: true,
+                        academicRecords: true,
+                    },
+                    orderBy: {
+                        startedAt: "desc",
+                    },
+                },
+            },
+        });
     }
     // Soft delete Course
     static async deleteCourse(courseId) {
@@ -187,11 +282,14 @@ class AdminService {
     }
     static async getAllAcademicRecords() {
         return prisma_1.default.academicRecord.findMany({
-            include: { enrollment: { include: { student: true, course: true } } },
+            include: { enrollment: { include: { student: { include: { user: true } },
+                        course: true }
+                }
+            },
         });
     }
     // Fetch all students
-    static async getAllStudents(page, limit, search) {
+    static async getAllStudentsWithPagination(page, limit, search) {
         const whereCondition = {
             OR: [
                 { firstName: { contains: search, mode: client_1.Prisma.QueryMode.insensitive } },
@@ -218,9 +316,17 @@ class AdminService {
             totalPages: Math.ceil(total / limit),
         };
     }
-    static async getAllStudentss() {
+    static async getAllStudents() {
         return prisma_1.default.student.findMany({
-            include: { user: true, enrollments: true },
+            where: {
+                user: {
+                    isActive: true, // ← This filters only active students  
+                }
+            },
+            include: {
+                user: true,
+                enrollments: true,
+            },
             orderBy: {
                 createdAt: "desc",
             },

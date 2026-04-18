@@ -2,19 +2,53 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminController = void 0;
 const admin_service_1 = require("../services/admin.service");
+// import { data } from "react-router-dom";
 class AdminController {
     static async createAdmin(req, res) {
         try {
-            const { serviceNumber, password } = req.body;
-            const admin = await admin_service_1.AdminService.createAdmin(serviceNumber, password);
+            const { serviceNumber, password, role } = req.body;
+            const admin = await admin_service_1.AdminService.createAdmin(serviceNumber, password, role);
             res.json(admin);
         }
         catch (err) {
             res.status(400).json({ message: err.message });
         }
     }
+    static async getExamOfficer(req, res) {
+        try {
+            const examOfficer = await admin_service_1.AdminService.getExamOfficer();
+            res.json(examOfficer);
+        }
+        catch (err) {
+            console.error("Getting ExamOfficer Error: ", err.message);
+            res.status(400).json({ message: err.message });
+        }
+    }
+    static async updateExamOfficer(req, res) {
+        try {
+            const { id } = req.params;
+            const updated = await admin_service_1.AdminService.updateExamOfficer(Number(id), req.body);
+            res.json(updated);
+        }
+        catch (err) {
+            console.error("Updated ExamOfficer Error: ", err.message);
+            res.status(400).json({ message: err.message });
+        }
+    }
+    static async deactivateExamOfficer(req, res) {
+        try {
+            const { id } = req.params;
+            const result = await admin_service_1.AdminService.deactivateExamOfficer(Number(id), req.body);
+            res.json(result);
+        }
+        catch (err) {
+            console.error("Error deactivating officer: ", err.message);
+            res.status(400).json({ message: err.message });
+        }
+    }
     static async createStudent(req, res) {
         try {
+            console.log("Student Data: ", JSON.stringify(req.body, null, 2));
             const student = await admin_service_1.AdminService.createStudent(req.body);
             res.json(student);
         }
@@ -26,6 +60,7 @@ class AdminController {
     static async editStudent(req, res) {
         try {
             const { id } = req.params;
+            console.log("Student Update Data: ", JSON.stringify(req.body, null, 2));
             const updatedStudent = await admin_service_1.AdminService.editStudent(Number(id), req.body);
             res.json(updatedStudent);
         }
@@ -53,6 +88,26 @@ class AdminController {
             res.status(400).json({ message: err.message });
         }
     }
+    static async getStudentsByCourse(req, res) {
+        try {
+            const { id } = req.params;
+            const students = await admin_service_1.AdminService.getStudentsByCourse(Number(id));
+            res.json(students);
+        }
+        catch (err) {
+            res.status(400).json({ message: err.message });
+        }
+    }
+    static async getStudentFullDetails(req, res) {
+        try {
+            const { id } = req.params;
+            const studentDetails = await admin_service_1.AdminService.getStudentFullDetails(Number(id));
+            res.json(studentDetails);
+        }
+        catch (err) {
+            res.status(400).json({ message: err.message });
+        }
+    }
     static async deleteCourse(req, res) {
         try {
             const { id } = req.params;
@@ -65,6 +120,7 @@ class AdminController {
     }
     static async enrollStudent(req, res) {
         try {
+            console.log("Enrollment data: ", req.body);
             const { studentId, courseId } = req.body;
             const enrollment = await admin_service_1.AdminService.enrollStudent(Number(studentId), Number(courseId));
             res.json(enrollment);
@@ -94,7 +150,8 @@ class AdminController {
     }
     static async updateEnrollmentStatus(req, res) {
         try {
-            const { enrollmentId, status } = req.body;
+            const { enrollmentId } = req.params;
+            const { status } = req.body;
             const updated = await admin_service_1.AdminService.updateEnrollmentStatus(Number(enrollmentId), status);
             res.json(updated);
         }
@@ -119,6 +176,7 @@ class AdminController {
     static async getAllAcademicRecords(req, res) {
         try {
             const records = await admin_service_1.AdminService.getAllAcademicRecords();
+            // console.log("Academic Records: ", records);
             res.json(records);
         }
         catch (err) {
@@ -141,7 +199,7 @@ class AdminController {
         const offset = (page - 1) * limit;
         const search = req.query.search ? String(req.query.search) : "";
         try {
-            const result = await admin_service_1.AdminService.getAllStudents(page, limit, search);
+            const result = await admin_service_1.AdminService.getAllStudentsWithPagination(page, limit, search);
             res.json(result);
         }
         catch (err) {
@@ -150,7 +208,8 @@ class AdminController {
     }
     static async getAllStudents(req, res) {
         try {
-            const students = await admin_service_1.AdminService.getAllStudentss();
+            const students = await admin_service_1.AdminService.getAllStudents();
+            // console.log("Fetched students: ", JSON.stringify(students, null, 2));
             res.json(students);
         }
         catch (err) {
