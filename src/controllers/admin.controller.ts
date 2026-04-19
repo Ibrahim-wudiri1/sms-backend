@@ -194,9 +194,8 @@ export class AdminController {
   }
 
   static async getAllStudentsWithPagination(req: Request, res: Response) {
-    const page = req.params.page ? Number(req.params.page) : 1;
-    const limit = req.params.limit ? Number(req.params.limit) : 10;
-    const offset = (page - 1) * limit;
+    const page = req.query.page ? Number(req.query.page) : 1;
+    const limit = req.query.limit ? Number(req.query.limit) : 10;
     const search = req.query.search ? String(req.query.search) : "";
     try {
       const result = await AdminService.getAllStudentsWithPagination(page, limit, search);
