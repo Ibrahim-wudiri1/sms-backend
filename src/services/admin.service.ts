@@ -290,6 +290,30 @@ static async getStudentFullDetails(studentId: number) {
   }
   // Update Enrollment Status
   static async updateEnrollmentStatus(enrollmentId: number, status: "ACTIVE" | "COMPLETED" | "RTU") {
+    // Check if enrollment exists
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { id: enrollmentId },
+      include: { academicRecords: true }
+    });
+
+    if (!enrollment) {
+      throw new Error("Enrollment not found");
+    }
+
+    // If marking as COMPLETED, check for academic record and certificate
+    if (status === "COMPLETED") {
+      // Check if academic record exists
+      if (!enrollment.academicRecords || enrollment.academicRecords.length === 0) {
+        throw new Error("Cannot mark course as completed. No academic record found for this enrollment.");
+      }
+
+      // Check if certificate exists
+      const hasCert = await this.hasCertificate(enrollmentId);
+      if (!hasCert) {
+        throw new Error("Cannot mark course as completed. Certificate must be uploaded first.");
+      }
+    }
+
     const updateData: any = { status };
     if (status === "COMPLETED" || status === "RTU") updateData.completedAt = new Date();
 
@@ -380,6 +404,94 @@ static async getStudentFullDetails(studentId: number) {
     return prisma.student.findUnique({
       where: { id },
       include: { user: true, enrollments: { include: { course: true, academicRecords: true } } },
+    });
+  }
+
+  // Update Course
+  static async updateCourse(courseId: number, courseData: any) {
+    const { code, title, duration, description } = courseData;
+
+    if (!code || !code.trim()) {
+      throw new Error("Course Code is required");
+    }
+
+    if (!title || !title.trim()) {
+      throw new Error("Course Title is required");
+    }
+
+    if (!duration || duration <= 0) {
+      throw new Error("Duration must be greater than 0");
+    }
+
+    return prisma.course.update({
+      where: { id: courseId },
+      data: {
+        code: code.trim(),
+        title: title.trim(),
+        duration: parseInt(duration),
+        description: description?.trim() || null,
+      },
+    });
+  }
+
+  // Upload Certificate for enrollment
+  static async uploadCertificate(enrollmentId: number, fileUrl: string, fileName: string) {
+    // Check if enrollment exists
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { id: enrollmentId },
+    });
+
+    if (!enrollment) {
+      throw new Error("Enrollment not found");
+    }
+
+    // Check if certificate already exists
+    const existingCertificate = await prisma.certificate.findUnique({
+      where: { enrollmentId },
+    });
+
+    if (existingCertificate) {
+      // Update existing certificate
+      return prisma.certificate.update({
+        where: { enrollmentId },
+        data: {
+          fileUrl,
+          fileName,
+          uploadedAt: new Date(),
+        },
+      });
+    }
+
+    // Create new certificate
+    return prisma.certificate.create({
+      data: {
+        enrollmentId,
+        fileUrl,
+        fileName,
+        uploadedAt: new Date(),
+      },
+    });
+  }
+
+  // Get certificate for an enrollment
+  static async getCertificate(enrollmentId: number) {
+    return prisma.certificate.findUnique({
+      where: { enrollmentId },
+    });
+  }
+
+  // Check if certificate exists for enrollment
+  static async hasCertificate(enrollmentId: number): Promise<boolean> {
+    const certificate = await prisma.certificate.findUnique({
+      where: { enrollmentId },
+    });
+    return !!certificate;
+  }
+
+  // Delete certificate
+  static async deleteCertificate(enrollmentId: number) {
+    return prisma.certificate.delete({
+      where: { enrollmentId },
     });
   }
 }

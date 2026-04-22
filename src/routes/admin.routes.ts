@@ -145,6 +145,7 @@ router.delete("/students/:id", AdminController.deleteStudent);
 // Course CRUD
 router.post("/courses", express.json(), AdminController.createCourse);
 router.get("/courses", AdminController.getAllCourses);
+router.patch("/courses/:id", express.json(), AdminController.updateCourse);
 router.get("/course/:id/students", AdminController.getStudentsByCourse);
 router.get("/student/:id/details", AdminController.getStudentFullDetails);
 router.delete("/courses/:id", AdminController.deleteCourse);
@@ -154,6 +155,11 @@ router.post("/enroll", express.json(), AdminController.enrollStudent);
 router.get("/enrollments/active", AdminController.getAllActiveEnrollment);
 router.get("/enrollments/student/:studentId", AdminController.getEnrollmentsByStudent);
 router.patch("/enrollments/:enrollmentId", express.json(), AdminController.updateEnrollmentStatus);
+
+// Certificate routes
+router.post("/enrollments/:enrollmentId/certificate", express.json(), AdminController.uploadCertificate);
+router.get("/enrollments/:enrollmentId/certificate", AdminController.getCertificate);
+router.delete("/enrollments/:enrollmentId/certificate", AdminController.deleteCertificate);
 
 // Academic Records
 router.post("/academic-records", express.json(), AdminController.addAcademicRecord);

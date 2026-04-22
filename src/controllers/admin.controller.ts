@@ -152,6 +152,18 @@ export class AdminController {
     try {
       const {enrollmentId} = req.params;
       const { status } = req.body;
+
+      // If marking as COMPLETED, check for certificate
+      if (status === "COMPLETED") {
+        const hasCertificate = await AdminService.hasCertificate(Number(enrollmentId));
+        if (!hasCertificate) {
+          return res.status(400).json({
+            message:
+              "Cannot mark course as completed. Certificate PDF not uploaded. Please upload the certificate before marking as completed.",
+          });
+        }
+      }
+
       const updated = await AdminService.updateEnrollmentStatus(Number(enrollmentId), status);
       res.json(updated);
     } catch (err: any) {
@@ -231,6 +243,58 @@ export class AdminController {
       const { id } = req.params;
       const student = await AdminService.getStudentById(Number(id));
       res.json(student);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+
+  static async updateCourse(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const updated = await AdminService.updateCourse(Number(id), req.body);
+      res.json(updated);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+
+  static async uploadCertificate(req: Request, res: Response) {
+    try {
+      console.log("Certificate upload data: ", req.body);
+      const { enrollmentId } = req.params;
+      const { fileUrl, fileName } = req.body;
+
+      if (!fileUrl || !fileName) {
+        return res.status(400).json({ message: "fileUrl and fileName are required" });
+      }
+
+      const certificate = await AdminService.uploadCertificate(Number(enrollmentId), fileUrl, fileName);
+      res.status(201).json(certificate);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+
+  static async getCertificate(req: Request, res: Response) {
+    try {
+      const { enrollmentId } = req.params;
+      const certificate = await AdminService.getCertificate(Number(enrollmentId));
+
+      if (!certificate) {
+        return res.status(404).json({ message: "Certificate not found" });
+      }
+
+      res.json(certificate);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+
+  static async deleteCertificate(req: Request, res: Response) {
+    try {
+      const { enrollmentId } = req.params;
+      const deleted = await AdminService.deleteCertificate(Number(enrollmentId));
+      res.json(deleted);
     } catch (err: any) {
       res.status(400).json({ message: err.message });
     }

@@ -103,6 +103,7 @@ model Enrollment {
   course      Course           @relation(fields: [courseId], references: [id])
 
   academicRecords AcademicRecord[]
+  certificate     Certificate?
 
   @@index([studentId])
   @@index([courseId])
@@ -117,6 +118,20 @@ model AcademicRecord {
   remark        String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentId])
+}
+
+model Certificate {
+  id           Int      @id @default(autoincrement())
+  enrollmentId Int      @unique
+  fileUrl      String
+  fileName      String
+  uploadedAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 
