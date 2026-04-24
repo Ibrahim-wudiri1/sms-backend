@@ -5,7 +5,7 @@ import { AdminController } from "../controllers/admin.controller";
 import { AdminService } from "../services/admin.service";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { roleMiddleware } from "../middleware/role.middleware";
-import { upload } from "../utils/upload";
+import { upload, certificateUpload } from "../utils/upload";
 import { paginationSchema, createStudentSchema } from "../validators/student.validator";
 import { validate } from "../middleware/validator";
 import { supabase, supabaseAdmin } from "../utils/supabase";
@@ -157,7 +157,7 @@ router.get("/enrollments/student/:studentId", AdminController.getEnrollmentsBySt
 router.patch("/enrollments/:enrollmentId", express.json(), AdminController.updateEnrollmentStatus);
 
 // Certificate routes
-router.post("/enrollments/:enrollmentId/certificate", express.json(), AdminController.uploadCertificate);
+router.post("/enrollments/:enrollmentId/certificate", certificateUpload.single("file"), AdminController.uploadCertificate);
 router.get("/enrollments/:enrollmentId/certificate", AdminController.getCertificate);
 router.delete("/enrollments/:enrollmentId/certificate", AdminController.deleteCertificate);
 

@@ -1,6 +1,7 @@
 // src/controllers/admin.controller.ts
 import { Request, Response } from "express";
 import { AdminService } from "../services/admin.service";
+import { supabaseAdmin } from "../utils/supabase";
 // import { data } from "react-router-dom";
 
 export class AdminController {
@@ -258,19 +259,52 @@ export class AdminController {
     }
   }
 
-  static async uploadCertificate(req: Request, res: Response) {
+  static async uploadCertificate(req: any, res: Response) {
     try {
-      console.log("Certificate upload data: ", req.body);
       const { enrollmentId } = req.params;
-      const { fileUrl, fileName } = req.body;
 
-      if (!fileUrl || !fileName) {
-        return res.status(400).json({ message: "fileUrl and fileName are required" });
+      if (!req.file) {
+        return res.status(400).json({ message: "No file provided" });
       }
 
-      const certificate = await AdminService.uploadCertificate(Number(enrollmentId), fileUrl, fileName);
-      res.status(201).json(certificate);
+      // Upload to Supabase Storage
+      const file = req.file;
+      const fileExt = file.originalname.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `certificates/${fileName}`;
+
+      const { data, error } = await supabaseAdmin.storage
+        .from('certificates')
+        .upload(filePath, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false,
+        });
+
+      if (error) {
+        console.error('Certificate upload error:', error);
+        return res.status(400).json({ message: `Failed to upload certificate: ${error.message}` });
+      }
+
+      // Generate a signed URL (valid for 7 days)
+      // why 7 days not forever
+      const { data: signedUrlData, error: signedError } = await supabaseAdmin.storage
+        .from('certificates')
+        .createSignedUrl(filePath, 60 * 60 * 24 * 7);
+
+      if (signedError || !signedUrlData) {
+        return res.status(400).json({ message: 'Failed to generate signed URL' });
+      }
+
+      const fileUrl = signedUrlData.signedUrl;
+      const certificate = await AdminService.uploadCertificate(Number(enrollmentId), fileUrl, file.originalname);
+      
+      res.status(201).json({
+        ...certificate,
+        fileUrl,
+        fileName: file.originalname,
+      });
     } catch (err: any) {
+      console.error('Certificate upload error:', err);
       res.status(400).json({ message: err.message });
     }
   }

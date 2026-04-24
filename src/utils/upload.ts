@@ -11,8 +11,21 @@ const fileFilter = (_req: any, file: Express.Multer.File, cb: any) => {
   cb(null, true);
 };
 
+const pdfFileFilter = (_req: any, file: Express.Multer.File, cb: any) => {
+  if (file.mimetype !== "application/pdf") {
+    return cb(new Error("Invalid file type. Only PDF allowed."), false);
+  }
+  cb(null, true);
+};
+
 export const upload = multer({
   storage,
   limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
   fileFilter,
+});
+
+export const certificateUpload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit for PDFs
+  fileFilter: pdfFileFilter,
 });
