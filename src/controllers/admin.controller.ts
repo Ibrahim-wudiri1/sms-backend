@@ -271,10 +271,10 @@ export class AdminController {
       const file = req.file;
       const fileExt = file.originalname.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `certificates/${fileName}`;
+      const filePath = `certificatess/${fileName}`;
 
       const { data, error } = await supabaseAdmin.storage
-        .from('certificates')
+        .from('certificatess')
         .upload(filePath, file.buffer, {
           contentType: file.mimetype,
           upsert: false,
@@ -285,17 +285,16 @@ export class AdminController {
         return res.status(400).json({ message: `Failed to upload certificate: ${error.message}` });
       }
 
-      // Generate a signed URL (valid for 7 days)
-      // why 7 days not forever
-      const { data: signedUrlData, error: signedError } = await supabaseAdmin.storage
-        .from('certificates')
-        .createSignedUrl(filePath, 60 * 60 * 24 * 7);
+      // Generate a permanent public URL for the certificate
+      const { data: publicUrlData } = supabaseAdmin.storage
+        .from('certificatess')
+        .getPublicUrl(filePath);
 
-      if (signedError || !signedUrlData) {
-        return res.status(400).json({ message: 'Failed to generate signed URL' });
+      if (!publicUrlData?.publicUrl) {
+        return res.status(400).json({ message: 'Failed to generate public URL for certificate' });
       }
 
-      const fileUrl = signedUrlData.signedUrl;
+      const fileUrl = publicUrlData.publicUrl;
       const certificate = await AdminService.uploadCertificate(Number(enrollmentId), fileUrl, file.originalname);
       
       res.status(201).json({
