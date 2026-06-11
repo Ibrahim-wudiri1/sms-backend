@@ -229,8 +229,8 @@ static async editStudent(studentId: number, studentData: any) {
 }
 
 static async getStudentFullDetails(studentId: number) {
-  return prisma.student.findUnique({
-    where: { id: studentId },
+  return prisma.student.findFirst({
+    where: { id: studentId, user: { isActive: true } },
     include: {
       user: true,
 
@@ -355,13 +355,18 @@ static async getStudentFullDetails(studentId: number) {
 
   // Fetch all students
   static async getAllStudentsWithPagination( page: number, limit: number, search: string) {
-    const whereCondition = {
-      OR: [
-        { firstName: { contains: search, mode: Prisma.QueryMode.insensitive } },
-        { lastName: { contains: search, mode: Prisma.QueryMode.insensitive } },
-        { user: { serviceNumber: { contains: search, mode: Prisma.QueryMode.insensitive } } },
-      ],
-    };
+      const whereCondition = {
+        AND: [
+          { user: { isActive: true } },
+          {
+            OR: [
+              { firstName: { contains: search, mode: Prisma.QueryMode.insensitive } },
+              { lastName: { contains: search, mode: Prisma.QueryMode.insensitive } },
+              { user: { serviceNumber: { contains: search, mode: Prisma.QueryMode.insensitive } } },
+            ],
+          },
+        ],
+      };
     const total = await prisma.student.count({
       where: whereCondition,
     });
@@ -401,8 +406,8 @@ static async getStudentFullDetails(studentId: number) {
 
   // Fetch single student
   static async getStudentById(id: number) {
-    return prisma.student.findUnique({
-      where: { id },
+    return prisma.student.findFirst({
+      where: { id, user: { isActive: true } },
       include: { user: true, enrollments: { include: { course: true, academicRecords: true } } },
     });
   }
