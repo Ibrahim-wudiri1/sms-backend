@@ -41,8 +41,8 @@ router.post(
     try {
       const studentData = { ...req.body };
 
-      console.log('Received student data from admin route:', studentData);
-      console.log('Received file:', req.file);
+      // console.log('Received student data from admin route:', studentData);
+      // console.log('Received file:', req.file);
       let passportPhotoUrl: string | undefined;
 
       if (req.file) {
@@ -65,15 +65,15 @@ router.post(
         }
 
         // Generate a signed URL (valid for e.g. 7 days)
-        const { data: signedUrlData, error: signedError } = await supabaseAdmin.storage
+        const { data: publicUrldata } = supabaseAdmin.storage
           .from('passport-photos')
-          .createSignedUrl(filePath, 60 * 60 * 24 * 7); // 7 days in seconds
+          .getPublicUrl(filePath); // 7 days in seconds
 
-        if (signedError || !signedUrlData) {
+        if (!publicUrldata?.publicUrl) {
           throw new Error('Failed to generate signed URL');
         }
 
-        passportPhotoUrl = signedUrlData.signedUrl;
+        passportPhotoUrl = publicUrldata.publicUrl;
       }
 
       // Save student with the signed URL (or permanent public URL if bucket is public)

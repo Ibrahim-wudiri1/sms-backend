@@ -63,7 +63,7 @@ static async createStudent(studentData: any) {
     ...studentProfile  // ← now includes gender, firstName, etc.
   } = studentData;
 
-  console.log("Spread studentProfile:", JSON.stringify(studentProfile, null, 2));
+  // console.log("Spread studentProfile:", JSON.stringify(studentProfile, null, 2));
 
   const hashed = await hashPassword(password);
 

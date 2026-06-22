@@ -49,7 +49,7 @@ export class AdminController {
 
   static async createStudent(req: Request, res: Response) {
     try {
-      console.log("Student Data: ", JSON.stringify(req.body, null, 2));
+      // console.log("Student Data: ", JSON.stringify(req.body, null, 2));
       const student = await AdminService.createStudent(req.body);
       res.json(student);
     } catch (err: any) {
@@ -61,7 +61,7 @@ export class AdminController {
   static async editStudent(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      console.log("Student Update Data: ", JSON.stringify(req.body, null, 2));
+      // console.log("Student Update Data: ", JSON.stringify(req.body, null, 2));
       const updatedStudent = await AdminService.editStudent(Number(id), req.body);
       res.json(updatedStudent);
     } catch (err: any) {
