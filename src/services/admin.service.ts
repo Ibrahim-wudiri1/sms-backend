@@ -412,6 +412,48 @@ static async getStudentFullDetails(studentId: number) {
     });
   }
 
+  // Add this method to AdminService class
+static async updateStudentPhoto(studentId: number, file: Express.Multer.File) {
+  // Get current student to delete old photo if exists
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { passportPhotoUrl: true }
+  });
+
+  if (!student) throw new Error("Student not found");
+
+  // Upload new photo
+  const fileExt = file.originalname.split('.').pop();
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+  const filePath = `students/${fileName}`;
+
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from('passport-photos')
+    .upload(filePath, file.buffer, {
+      contentType: file.mimetype,
+      upsert: true,
+    });
+
+  if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
+
+  // Generate signed URL
+  const { data: publicUrlData } = await supabase.storage
+    .from('passport-photos')
+    .getPublicUrl(filePath); 
+
+  
+  if (!publicUrldata?.publicUrl) {
+    throw new Error('Failed to generate signed URL');
+  }  
+  const newPhotoUrl = publicUrlData?.publicUrl;
+
+  // Update student record
+  return prisma.student.update({
+    where: { id: studentId },
+    data: { passportPhotoUrl: newPhotoUrl },
+    include: { user: true }
+  });
+}
   // Update Course
   static async updateCourse(courseId: number, courseData: any) {
     const { code, title, duration, description } = courseData;

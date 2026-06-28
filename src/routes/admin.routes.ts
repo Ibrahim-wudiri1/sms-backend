@@ -67,7 +67,7 @@ router.post(
         // Generate a signed URL (valid for e.g. 7 days)
         const { data: publicUrldata } = supabaseAdmin.storage
           .from('passport-photos')
-          .getPublicUrl(filePath); // 7 days in seconds
+          .getPublicUrl(filePath); 
 
         if (!publicUrldata?.publicUrl) {
           throw new Error('Failed to generate signed URL');
@@ -139,6 +139,26 @@ router.put("/students/:id", express.json(), AdminController.editStudent);
 //     }
 //   }
 // );
+// updating student profile image
+router.put(
+  "/students/:id/photo",
+  upload.single("passportPhoto"),
+  async (req: MulterRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No photo uploaded" });
+      }
+
+      const result = await AdminService.updateStudentPhoto(Number(id), req.file);
+      res.json(result);
+    } catch (err: any) {
+      console.error("Photo update error:", err);
+      res.status(500).json({ message: err.message || "Failed to update photo" });
+    }
+  }
+);
 
 router.delete("/students/:id", AdminController.deleteStudent);
 
