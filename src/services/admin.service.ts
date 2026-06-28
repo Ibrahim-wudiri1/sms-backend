@@ -413,7 +413,6 @@ static async getStudentFullDetails(studentId: number) {
     });
   }
 
-  // Add this method to AdminService class
 static async updateStudentPhoto(studentId: number, file: Express.Multer.File) {
   // Get current student to delete old photo if exists
   const student = await prisma.student.findUnique({
