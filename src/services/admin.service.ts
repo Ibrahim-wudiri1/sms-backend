@@ -2,6 +2,7 @@
 import { Role, Prisma } from "@prisma/client";
 import prisma from "../prisma";
 import { hashPassword } from "../utils/hash";
+import {supabase, supabaseAdmin} from "../utils/supabase";
 
 export class AdminService {
   // Create another Admin
@@ -442,7 +443,7 @@ static async updateStudentPhoto(studentId: number, file: Express.Multer.File) {
     .getPublicUrl(filePath); 
 
   
-  if (!publicUrldata?.publicUrl) {
+  if (!publicUrlData?.publicUrl) {
     throw new Error('Failed to generate signed URL');
   }  
   const newPhotoUrl = publicUrlData?.publicUrl;
