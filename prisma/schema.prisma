@@ -84,6 +84,8 @@ model Course {
   updatedAt   DateTime @updatedAt
 
   enrollments Enrollment[]
+  
+  courseYears CourseYear[]
 
   @@index([isActive])
   @@index([isDeleted])
@@ -93,6 +95,7 @@ model Enrollment {
   id          Int              @id @default(autoincrement())
   studentId   Int
   courseId    Int
+  courseYearId Int?
   status      EnrollmentStatus
   startedAt   DateTime         @default(now())
   completedAt DateTime?
@@ -101,12 +104,14 @@ model Enrollment {
 
   student     Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   course      Course           @relation(fields: [courseId], references: [id])
+  courseYear  CourseYear?      @relation(fields: [courseYearId], references: [id])
 
   academicRecords AcademicRecord[]
   certificate     Certificate?
 
   @@index([studentId])
   @@index([courseId])
+  @@index([courseYearId])
   @@index([status])
 }
 
@@ -136,4 +141,17 @@ model Certificate {
   enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 
   @@index([enrollmentId])
+}
+
+model CourseYear {
+  id        Int      @id @default(autoincrement())
+  courseId  Int
+  label     String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@index([isActive])
 }

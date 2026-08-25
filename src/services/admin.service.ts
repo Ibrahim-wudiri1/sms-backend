@@ -208,6 +208,25 @@ static async editStudent(studentId: number, studentData: any) {
     );
   }
 
+  // CourseYear management
+  static async createCourseYear(courseId: number, label: string) {
+    const course = await prisma.course.findUnique({ where: { id: courseId } });
+    if (!course) throw new Error("Course not found");
+
+    return prisma.courseYear.create({
+      data: { courseId, label },
+    });
+  }
+
+  static async getCourseYears(courseId: number) {
+    return prisma.courseYear.findMany({ where: { courseId, isActive: true }, orderBy: { createdAt: 'desc' } });
+  }
+
+  static async deleteCourseYear(yearId: number) {
+    // soft-delete
+    return prisma.courseYear.update({ where: { id: yearId }, data: { isActive: false } });
+  }
+
   static async getStudentsByCourse(courseId: number) {
   return prisma.enrollment.findMany({
     where: {
@@ -258,21 +277,45 @@ static async getStudentFullDetails(studentId: number) {
   }
 
   // Enroll student
-  static async enrollStudent(studentId: number, courseId: number) {
+  static async enrollStudent(studentId: number, courseId: number, courseYearId?: number) {
     // Check ACTIVE enrollment
     const active = await prisma.enrollment.findFirst({
       where: { studentId, status: "ACTIVE" },
     });
     if (active) throw new Error("Student already has ACTIVE enrollment");
 
+    // validate courseYearId if provided
+    if (courseYearId) {
+      const cy = await prisma.courseYear.findUnique({ where: { id: courseYearId } });
+      if (!cy || cy.courseId !== courseId) throw new Error("Invalid courseYearId for the selected course");
+    }
+
     return prisma.enrollment.create({
       data: {
         studentId,
         courseId,
+        courseYearId: courseYearId ?? null,
         status: "ACTIVE",
         startedAt: new Date(),
       },
     });
+  }
+
+  static async getStudentsByCourseAndYear(courseId: number, yearId?: number) {
+    const whereClause: any = { courseId, status: 'ACTIVE' };
+    if (yearId) whereClause.courseYearId = yearId;
+
+    return prisma.enrollment.findMany({
+      where: whereClause,
+      include: {
+        student: { include: { user: true } },
+      },
+    }).then((enrollments) =>
+      enrollments.map((e) => ({
+        ...e.student,
+        enrollmentId: e.id,
+      }))
+    );
   }
 
   static async getAllActiveEnrollment() {

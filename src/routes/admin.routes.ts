@@ -170,6 +170,12 @@ router.get("/course/:id/students", AdminController.getStudentsByCourse);
 router.get("/student/:id/details", AdminController.getStudentFullDetails);
 router.delete("/courses/:id", AdminController.deleteCourse);
 
+// CourseYear routes (admins only)
+router.post("/courses/:courseId/years", express.json(), authMiddleware, roleMiddleware(["ADMIN"]), AdminController.createCourseYear);
+router.get("/courses/:courseId/years", authMiddleware, roleMiddleware(["ADMIN"]), AdminController.getCourseYears);
+router.delete("/courses/years/:yearId", express.json(), authMiddleware, roleMiddleware(["ADMIN"]), AdminController.deleteCourseYear);
+router.get("/courses/:courseId/years/:yearId/students", authMiddleware, roleMiddleware(["ADMIN"]), AdminController.getStudentsByCourseAndYear);
+
 // Enrollment routes
 router.post("/enroll", express.json(), AdminController.enrollStudent);
 router.get("/enrollments/active", AdminController.getAllActiveEnrollment);

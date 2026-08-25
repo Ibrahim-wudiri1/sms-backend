@@ -79,6 +79,47 @@ export class AdminController {
     }
   }
 
+  static async createCourseYear(req: Request, res: Response) {
+    try {
+      const { courseId } = req.params;
+      const { label } = req.body;
+      const year = await AdminService.createCourseYear(Number(courseId), String(label));
+      res.status(201).json(year);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+
+  static async getCourseYears(req: Request, res: Response) {
+    try {
+      const { courseId } = req.params;
+      const years = await AdminService.getCourseYears(Number(courseId));
+      res.json(years);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+
+  static async deleteCourseYear(req: Request, res: Response) {
+    try {
+      const { yearId } = req.params;
+      const deleted = await AdminService.deleteCourseYear(Number(yearId));
+      res.json(deleted);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+
+  static async getStudentsByCourseAndYear(req: Request, res: Response) {
+    try {
+      const { courseId, yearId } = req.params;
+      const students = await AdminService.getStudentsByCourseAndYear(Number(courseId), yearId ? Number(yearId) : undefined);
+      res.json(students);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+
   static async getAllCourses(req: Request, res: Response){
     try{
       const courses = await AdminService.getAllCourses();
@@ -122,8 +163,8 @@ export class AdminController {
   static async enrollStudent(req: Request, res: Response) {
     try {
       console.log("Enrollment data: ", req.body);
-      const { studentId, courseId } = req.body;
-      const enrollment = await AdminService.enrollStudent(Number(studentId), Number(courseId));
+      const { studentId, courseId, courseYearId } = req.body;
+      const enrollment = await AdminService.enrollStudent(Number(studentId), Number(courseId), courseYearId ? Number(courseYearId) : undefined);
       res.json(enrollment);
     } catch (err: any) {
       res.status(400).json({ message: err.message });
