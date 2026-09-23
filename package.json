@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.ts",
   "scripts": {
-    "postinstall": "prisma generate",
+  
     "vercel-build": "prisma generate",
     "dev": "nodemon --exec \"npx tsx server.ts\"",
     "build": "rimraf dist && tsc",
