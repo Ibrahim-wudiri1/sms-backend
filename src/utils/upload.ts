@@ -29,3 +29,10 @@ export const certificateUpload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit for PDFs
   fileFilter: pdfFileFilter,
 });
+
+// Multer middleware for multiple PDF fields: courseReport, resultSheet, ab197
+export const enrollmentDocsUpload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: pdfFileFilter,
+});

@@ -143,6 +143,25 @@ model Certificate {
   @@index([enrollmentId])
 }
 
+// New model to store additional enrollment documents (Course Report, Result Sheet, AB197)
+model EnrollmentDocument {
+  id               Int      @id @default(autoincrement())
+  enrollmentId     Int      @unique
+  courseReportUrl  String?
+  courseReportName String?
+  resultSheetUrl   String?
+  resultSheetName  String?
+  ab197Url         String?
+  ab197Name        String?
+  uploadedAt       DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentId])
+}
+
 model CourseYear {
   id        Int      @id @default(autoincrement())
   courseId  Int

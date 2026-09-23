@@ -563,6 +563,39 @@ static async updateStudentPhoto(studentId: number, file: Express.Multer.File) {
     });
   }
 
+  // Save enrollment documents (create or update)
+  static async saveEnrollmentDocuments(enrollmentId: number, docs: any) {
+    // Check enrollment exists
+    const enrollment = await prisma.enrollment.findUnique({ where: { id: enrollmentId } });
+    if (!enrollment) throw new Error('Enrollment not found');
+
+    const existing = await prisma.enrollmentDocument.findUnique({ where: { enrollmentId } });
+    const payload: any = {};
+
+    if (docs.courseReport) {
+      payload.courseReportUrl = docs.courseReport.url;
+      payload.courseReportName = docs.courseReport.name;
+    }
+    if (docs.resultSheet) {
+      payload.resultSheetUrl = docs.resultSheet.url;
+      payload.resultSheetName = docs.resultSheet.name;
+    }
+    if (docs.ab197) {
+      payload.ab197Url = docs.ab197.url;
+      payload.ab197Name = docs.ab197.name;
+    }
+
+    if (existing) {
+      return prisma.enrollmentDocument.update({ where: { enrollmentId }, data: { ...payload, uploadedAt: new Date() } });
+    }
+
+    return prisma.enrollmentDocument.create({ data: { enrollmentId, ...payload } });
+  }
+
+  static async getEnrollmentDocuments(enrollmentId: number) {
+    return prisma.enrollmentDocument.findUnique({ where: { enrollmentId } });
+  }
+
   // Get certificate for an enrollment
   static async getCertificate(enrollmentId: number) {
     return prisma.certificate.findUnique({

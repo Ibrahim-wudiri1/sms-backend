@@ -349,6 +349,66 @@ export class AdminController {
     }
   }
 
+  static async uploadEnrollmentDocuments(req: any, res: Response) {
+    try {
+      const { enrollmentId } = req.params;
+
+      if (!req.files) {
+        return res.status(400).json({ message: "No files provided" });
+      }
+
+      // files is an object with keys courseReport, resultSheet, ab197
+      const filesObj: any = req.files;
+
+      // Helper to upload a single file to supabase and return { url, name }
+      const uploadSingle = async (file: Express.Multer.File | undefined, bucket: string, folder: string) => {
+        if (!file) return null;
+        const fileExt = file.originalname.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `${folder}/${fileName}`;
+
+        const { error } = await supabaseAdmin.storage.from(bucket).upload(filePath, file.buffer, { contentType: file.mimetype, upsert: false });
+        if (error) throw new Error(error.message);
+
+        const { data: publicUrlData } = supabaseAdmin.storage.from(bucket).getPublicUrl(filePath);
+        if (!publicUrlData?.publicUrl) throw new Error('Failed to generate public URL');
+
+        return { url: publicUrlData.publicUrl, name: file.originalname };
+      };
+
+      const courseReportFile = filesObj.courseReport ? filesObj.courseReport[0] : undefined;
+      const resultSheetFile = filesObj.resultSheet ? filesObj.resultSheet[0] : undefined;
+      const ab197File = filesObj.ab197 ? filesObj.ab197[0] : undefined;
+
+      const courseReport = await uploadSingle(courseReportFile, 'enrollment-docs', 'course-reports');
+      const resultSheet = await uploadSingle(resultSheetFile, 'enrollment-docs', 'result-sheets');
+      const ab197 = await uploadSingle(ab197File, 'enrollment-docs', 'ab197');
+
+      const saved = await AdminService.saveEnrollmentDocuments(Number(enrollmentId), {
+        courseReport,
+        resultSheet,
+        ab197,
+      });
+
+      res.status(201).json(saved);
+    } catch (err: any) {
+      console.error('Enrollment documents upload error:', err);
+      res.status(400).json({ message: err.message });
+    }
+  }
+
+  static async getEnrollmentDocuments(req: Request, res: Response) {
+    try {
+      const { enrollmentId } = req.params;
+      const docs = await AdminService.getEnrollmentDocuments(Number(enrollmentId));
+      if (!docs) return res.status(404).json({ message: 'Documents not found' });
+      res.json(docs);
+    } catch (err: any) {
+      console.error('Get enrollment documents error:', err);
+      res.status(400).json({ message: err.message });
+    }
+  }
+
   static async getCertificate(req: Request, res: Response) {
     try {
       const { enrollmentId } = req.params;

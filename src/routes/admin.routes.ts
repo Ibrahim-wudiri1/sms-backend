@@ -5,7 +5,7 @@ import { AdminController } from "../controllers/admin.controller";
 import { AdminService } from "../services/admin.service";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { roleMiddleware } from "../middleware/role.middleware";
-import { upload, certificateUpload } from "../utils/upload";
+import { upload, certificateUpload, enrollmentDocsUpload } from "../utils/upload";
 import { paginationSchema, createStudentSchema } from "../validators/student.validator";
 import { validate } from "../middleware/validator";
 import { supabase, supabaseAdmin } from "../utils/supabase";
@@ -184,6 +184,16 @@ router.patch("/enrollments/:enrollmentId", express.json(), AdminController.updat
 
 // Certificate routes
 router.post("/enrollments/:enrollmentId/certificate", certificateUpload.single("file"), AdminController.uploadCertificate);
+// Enrollment documents: course report, result sheet, optional AB197
+router.post(
+  "/enrollments/:enrollmentId/documents",
+  enrollmentDocsUpload.fields([
+    { name: "courseReport", maxCount: 1 },
+    { name: "resultSheet", maxCount: 1 },
+    { name: "ab197", maxCount: 1 },
+  ]),
+  AdminController.uploadEnrollmentDocuments
+);
 router.get("/enrollments/:enrollmentId/certificate", AdminController.getCertificate);
 router.delete("/enrollments/:enrollmentId/certificate", AdminController.deleteCertificate);
 
