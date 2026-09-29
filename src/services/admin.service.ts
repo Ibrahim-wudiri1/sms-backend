@@ -156,17 +156,29 @@ static async editStudent(studentId: number, studentData: any) {
   });
 }
   static async deleteStudent(studentId: number) {
-    // Soft delete: set isActive = false on User, but keep Student record for history
+    // Soft delete: disable the user and remove any active enrollments so the student
+    // cannot appear in course listings anymore.
     const student = await prisma.student.findUnique({
       where: { id: studentId },
       include: { user: true },
     });
     if (!student) throw new Error("Student not found");
-    return prisma.user.update({
-      where: { id: student.userId },
-      data: { isActive: false },
+
+    return prisma.$transaction(async (tx) => {
+      await tx.enrollment.deleteMany({
+        where: {
+          studentId,
+          status: "ACTIVE",
+        },
+      });
+
+      return tx.user.update({
+        where: { id: student.userId },
+        data: { isActive: false },
+      });
     });
   }
+  //hudhe 
   static async createStudents(studentData: any) {
     const { serviceNumber, password, passportPhotoUrl, ...profile } = studentData;
     const hashed = await hashPassword(password);
@@ -232,6 +244,11 @@ static async editStudent(studentId: number, studentData: any) {
     where: {
       courseId,
       status: "ACTIVE",
+      student: {
+        user: {
+          isActive: true,
+        },
+      },
     },
     include: {
       student: {
@@ -278,6 +295,14 @@ static async getStudentFullDetails(studentId: number) {
 
   // Enroll student
   static async enrollStudent(studentId: number, courseId: number, courseYearId?: number) {
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      include: { user: true },
+    });
+
+    if (!student) throw new Error("Student not found");
+    if (!student.user.isActive) throw new Error("Student account is inactive");
+
     // Check ACTIVE enrollment
     const active = await prisma.enrollment.findFirst({
       where: { studentId, status: "ACTIVE" },
@@ -302,7 +327,15 @@ static async getStudentFullDetails(studentId: number) {
   }
 
   static async getStudentsByCourseAndYear(courseId: number, yearId?: number) {
-    const whereClause: any = { courseId, status: 'ACTIVE' };
+    const whereClause: any = {
+      courseId,
+      status: 'ACTIVE',
+      student: {
+        user: {
+          isActive: true,
+        },
+      },
+    };
     if (yearId) whereClause.courseYearId = yearId;
 
     return prisma.enrollment.findMany({
@@ -320,7 +353,14 @@ static async getStudentFullDetails(studentId: number) {
 
   static async getAllActiveEnrollment() {
     return prisma.enrollment.findMany({
-      where: { status: "ACTIVE" },
+      where: {
+        status: "ACTIVE",
+        student: {
+          user: {
+            isActive: true,
+          },
+        },
+      },
       include: { course: true, student: { include: { user: true } } },
     });
   }
@@ -328,7 +368,15 @@ static async getStudentFullDetails(studentId: number) {
   // Get enrollments for a student
   static async getEnrollmentsByStudent(studentId: number) {
     return prisma.enrollment.findMany({
-      where: { studentId, status: "ACTIVE" },
+      where: {
+        studentId,
+        status: "ACTIVE",
+        student: {
+          user: {
+            isActive: true,
+          },
+        },
+      },
       include: { course: true },
     });
   }
@@ -381,13 +429,31 @@ static async getStudentFullDetails(studentId: number) {
 
   static async getAcademicRecordsByStudent(studentId: number) {
     return prisma.academicRecord.findMany({
-      where: { enrollment: { studentId } },
+      where: {
+        enrollment: {
+          studentId,
+          student: {
+            user: {
+              isActive: true,
+            },
+          },
+        },
+      },
       include: { enrollment: { include: { course: true } } },
     });
   }
 
   static async getAllAcademicRecords() {
     return prisma.academicRecord.findMany({
+      where: {
+        enrollment: {
+          student: {
+            user: {
+              isActive: true,
+            },
+          },
+        },
+      },
       include: { enrollment:
          { include:
            { student: {include: {user: true}},
